@@ -80,9 +80,7 @@ import { ref, computed, reactive } from 'vue'
 import FormFooter from './FormFooter.vue'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
-defineProps({
-  phoneNumber: { type: String },
-})
+const phoneNumber = ref(localStorage.getItem('phone_number'))
 
 const isSend = ref(false)
 const timerCount = ref(30)

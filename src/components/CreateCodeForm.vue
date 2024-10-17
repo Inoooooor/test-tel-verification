@@ -97,10 +97,12 @@ const validatePhoneNumber = async (rule: any, value: string, callback: any) => {
   }
 
   try {
-    await axios.get(
+    const { data } = await axios.get(
       `https://api.kod.mobi/api/v1/message/create?phone=${computedPhoneNumber.value}&type=sms`,
       { headers: { 'x-api-key': import.meta.env.VITE_API_KEY } },
     )
+    localStorage.setItem('session_id', data.data.session_id)
+    localStorage.setItem('phone_number', computedPhoneNumber.value)
     callback()
   } catch (error: unknown) {
     if (isCustomError(error) && error.status === 400) {
@@ -118,13 +120,12 @@ const computedPhoneNumber = computed(
 )
 
 const submitForm = async (formEl: FormInstance | undefined) => {
-  emit('changeToCheck')
-  formState.value = 'check'
   if (!formEl) return
   formEl.validate(valid => {
     if (!valid) {
       return
     }
+    emit('changeToCheck')
   })
 }
 </script>
