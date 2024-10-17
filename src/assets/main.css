@@ -3,3 +3,27 @@
 * {
   font-family: Roboto;
 }
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.mb-40px {
+  margin-bottom: 40px;
+}
+
+.mr-24px {
+  margin-right: 24px;
+}
+
+.text-grey {
+  color: rgba(102, 102, 102, 1);
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.w-50 {
+  width: 50%;
+}
