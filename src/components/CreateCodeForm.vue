@@ -70,6 +70,7 @@ import axios from 'axios'
 import { ref, computed, reactive } from 'vue'
 import rawCountries from '../content/intelNumbers'
 import FormFooter from './FormFooter.vue'
+import isCustomError from '@/helpers/isCustomError'
 
 const emit = defineEmits(['changeToCheck'])
 
@@ -86,10 +87,6 @@ const ruleForm = reactive({
 })
 
 const formState = ref('create')
-
-function isCustomError(error: unknown): error is { status?: number } {
-  return typeof error === 'object' && error !== null && 'status' in error
-}
 
 const validatePhoneNumber = async (rule: any, value: string, callback: any) => {
   if (!value) {

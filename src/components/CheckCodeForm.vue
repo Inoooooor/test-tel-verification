@@ -17,16 +17,21 @@
         Отправлен по номеру {{ phoneNumber }}
       </p>
     </div>
-    <el-form ref="ruleFormRef" class="form-container__form">
+    <el-form
+      ref="ruleFormRef"
+      :model="ruleForm"
+      :rules="rules"
+      class="form-container__form"
+    >
       <el-form-item
         class="mb-40px"
         label-position="top"
         label="Способ получения кода"
-        prop="country"
+        prop="currentMessanger"
       >
         <el-select
           placeholder="Выберите мессенджер"
-          v-model="currentMessanger"
+          v-model="ruleForm.currentMessanger"
           size="large"
         >
           <el-option
@@ -44,11 +49,11 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item class="mb-40px" prop="phoneNumber">
+      <el-form-item class="mb-40px" prop="checkCode">
         <el-input
           placeholder="Введите код"
           type="text"
-          v-model="checkCode"
+          v-model="ruleForm.checkCode"
           size="large"
         >
           <template #append>
@@ -69,7 +74,7 @@
             Назад
           </el-button>
           <el-button
-            @click="submitForm"
+            @click="submitForm(ruleFormRef)"
             class="w-50"
             size="large"
             type="primary"
@@ -83,10 +88,53 @@
   </div>
 </template>
 <script setup lang="ts">
+import type { FormInstance, FormRules } from 'element-plus'
 import axios from 'axios'
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import FormFooter from './FormFooter.vue'
 import { ArrowLeft } from '@element-plus/icons-vue'
+import isCustomError from '@/helpers/isCustomError'
+
+const ruleFormRef = ref<FormInstance>()
+
+const ruleForm = reactive({
+  checkCode: '',
+  currentMessanger: 'whatsapp',
+})
+
+const validateCheckCode = async (rule: any, value: string, callback: any) => {
+  if (!value) {
+    callback(new Error('Введите код'))
+    return
+  }
+
+  try {
+    const sessionId = localStorage.getItem('session_id')
+    const { data } = await axios.get(
+      `https://api.kod.mobi/api/v1/message/check?session_id=${sessionId}&code=${ruleForm.checkCode}`,
+      { headers: { 'x-api-key': import.meta.env.VITE_API_KEY } },
+    )
+    console.log(data.data.verify_token)
+    callback()
+  } catch (error: unknown) {
+    if (isCustomError(error) && error.status === 400) {
+      callback(new Error('Код введён неверно'))
+    }
+    if (
+      isCustomError(error) &&
+      error.sys_message === 'ERROR_MESSAGE_WRONG_CODE'
+    ) {
+      callback(new Error('Код введён неверно'))
+    }
+    if (isCustomError(error) && error.sys_message === 'ERROR_SESSION_EXPIRED') {
+      callback(new Error('Сессия устарела. Укажите номер телефона заново'))
+    }
+  }
+}
+
+const rules = reactive<FormRules<typeof ruleForm>>({
+  checkCode: [{ asyncValidator: validateCheckCode, trigger: 'blur' }],
+})
 
 const phoneNumber = ref(localStorage.getItem('phone_number'))
 
@@ -94,8 +142,6 @@ const isSend = ref(false)
 const timerCount = ref(30)
 
 const padStartTimer = computed(() => String(timerCount.value).padStart(2, '0'))
-
-const checkCode = ref('')
 
 const messangers = [
   {
@@ -114,7 +160,6 @@ const messangers = [
     imgSrc: '/sms.png',
   },
 ]
-const currentMessanger = ref('whatsapp')
 
 const handleTimer = () => {
   isSend.value = true
@@ -134,19 +179,21 @@ const resendCode = async () => {
 
   const sessionId = localStorage.getItem('session_id')
   await axios.get(
-    `https://api.kod.mobi/api/v1/message/send?session_id=${sessionId}&type=${currentMessanger.value}`,
+    `https://api.kod.mobi/api/v1/message/send?session_id=${sessionId}&type=${ruleForm.currentMessanger}`,
     { headers: { 'x-api-key': import.meta.env.VITE_API_KEY } },
   )
 }
 
-const submitForm = async () => {
-  const sessionId = localStorage.getItem('session_id')
+const submitForm = async (formEl: FormInstance | undefined) => {
+  if (!formEl) {
+    return
+  }
 
-  const { data } = await axios.get(
-    `https://api.kod.mobi/api/v1/message/check?session_id=${sessionId}&code=${checkCode.value}`,
-    { headers: { 'x-api-key': import.meta.env.VITE_API_KEY } },
-  )
-  console.log(data.data.verify_token)
+  formEl.validate(valid => {
+    if (!valid) {
+      return
+    }
+  })
 }
 </script>
 <style scoped>
