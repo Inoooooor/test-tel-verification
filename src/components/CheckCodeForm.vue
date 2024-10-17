@@ -31,11 +31,16 @@
         >
           <el-option
             v-for="messanger in messangers"
-            :key="messanger"
-            :label="messanger"
-            :value="messanger"
+            :key="messanger.label"
+            :label="messanger.label"
+            :value="messanger.value"
+            style="display: flex; align-items: center"
           >
-            {{ messanger }}
+            <img
+              style="width: 24px; margin-right: 10px"
+              :src="messanger.imgSrc"
+            />
+            {{ messanger.label }}
           </el-option>
         </el-select>
       </el-form-item>
@@ -48,7 +53,7 @@
         >
           <template #append>
             <span v-if="isSend">0:{{ padStartTimer }}</span>
-            <el-button v-else @click="startTimer">Отправить</el-button>
+            <el-button v-else @click="resendCode">Отправить</el-button>
           </template>
         </el-input>
       </el-form-item>
@@ -63,20 +68,23 @@
           >
             Назад
           </el-button>
-          <el-button class="w-50" size="large" type="primary">
+          <el-button
+            @click="submitForm"
+            class="w-50"
+            size="large"
+            type="primary"
+          >
             Продолжить
           </el-button>
         </el-button-group>
       </el-form-item>
     </el-form>
-    <!-- <button @click="formState = 'create'">Вернуться</button> -->
     <form-footer />
   </div>
 </template>
 <script setup lang="ts">
-import type { FormInstance } from 'element-plus'
 import axios from 'axios'
-import { ref, computed, reactive } from 'vue'
+import { ref, computed } from 'vue'
 import FormFooter from './FormFooter.vue'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
@@ -85,16 +93,30 @@ const phoneNumber = ref(localStorage.getItem('phone_number'))
 const isSend = ref(false)
 const timerCount = ref(30)
 
-const padStartTimer = computed(() => {
-  return String(timerCount.value).padStart(2, '0')
-})
+const padStartTimer = computed(() => String(timerCount.value).padStart(2, '0'))
 
 const checkCode = ref('')
 
-const messangers = ['Telegram', 'WhatsApp']
-const currentMessanger = ref('WhatsApp')
+const messangers = [
+  {
+    label: 'WhatsApp',
+    value: 'whatsapp',
+    imgSrc: '/whatsapp.png',
+  },
+  {
+    label: 'Telegram',
+    value: 'telegram',
+    imgSrc: '/telegram.png',
+  },
+  {
+    label: 'SMS',
+    value: 'sms',
+    imgSrc: '/sms.png',
+  },
+]
+const currentMessanger = ref('whatsapp')
 
-const startTimer = () => {
+const handleTimer = () => {
   isSend.value = true
   const timer = setInterval(() => {
     if (timerCount.value === 1) {
@@ -107,14 +129,24 @@ const startTimer = () => {
   }, 1000)
 }
 
-const submitForm = async (formEl: FormInstance | undefined) => {
-  // formState.value = 'check'
-  if (!formEl) return
-  formEl.validate(valid => {
-    if (!valid) {
-      return
-    }
-  })
+const resendCode = async () => {
+  handleTimer()
+
+  const sessionId = localStorage.getItem('session_id')
+  await axios.get(
+    `https://api.kod.mobi/api/v1/message/send?session_id=${sessionId}&type=${currentMessanger.value}`,
+    { headers: { 'x-api-key': import.meta.env.VITE_API_KEY } },
+  )
+}
+
+const submitForm = async () => {
+  const sessionId = localStorage.getItem('session_id')
+
+  const { data } = await axios.get(
+    `https://api.kod.mobi/api/v1/message/check?session_id=${sessionId}&code=${checkCode.value}`,
+    { headers: { 'x-api-key': import.meta.env.VITE_API_KEY } },
+  )
+  console.log(data.data.verify_token)
 }
 </script>
 <style scoped>

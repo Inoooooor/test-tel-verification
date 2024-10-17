@@ -98,7 +98,7 @@ const validatePhoneNumber = async (rule: any, value: string, callback: any) => {
 
   try {
     const { data } = await axios.get(
-      `https://api.kod.mobi/api/v1/message/create?phone=${computedPhoneNumber.value}&type=sms`,
+      `https://api.kod.mobi/api/v1/message/create?phone=${computedPhoneNumber.value}`,
       { headers: { 'x-api-key': import.meta.env.VITE_API_KEY } },
     )
     localStorage.setItem('session_id', data.data.session_id)
