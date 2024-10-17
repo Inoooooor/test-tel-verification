@@ -5,6 +5,7 @@
       value-key="value"
       style="width: 120px"
       size="small"
+      @change="changeLocale"
     >
       <el-option
         v-for="language in languages"
@@ -21,8 +22,15 @@
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { locale } = useI18n()
 
 const currentLanguage = ref('ru')
+
+const changeLocale = () => {
+  locale.value = currentLanguage.value
+}
 
 const languages = [
   { value: 'ru', label: 'Русский' },
