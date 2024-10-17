@@ -81,14 +81,11 @@ import FormFooter from './FormFooter.vue'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
 defineProps({
-  phoneNumber: {
-    type: String,
-    required: true,
-  },
+  phoneNumber: { type: String },
 })
 
 const isSend = ref(false)
-const timerCount = ref(5)
+const timerCount = ref(30)
 
 const padStartTimer = computed(() => {
   return String(timerCount.value).padStart(2, '0')
