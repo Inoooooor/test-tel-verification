@@ -3,6 +3,8 @@ import type { FormInstance, FormRules } from 'element-plus'
 import axios from 'axios'
 import { ref, computed, reactive } from 'vue'
 import rawCountries from '../src/content/intelNumbers'
+import FormFooter from './components/FormFooter.vue'
+import CheckCodeForm from './components/CheckCodeForm.vue'
 
 const ruleFormRef = ref<FormInstance>()
 
@@ -16,31 +18,20 @@ const ruleForm = reactive({
   phoneNumber: '',
 })
 
-const languages = [
-  {
-    value: 'ru',
-    label: 'Русский',
-  },
-  {
-    value: 'en',
-    label: 'Английский',
-  },
-]
-
-const currentLanguage = ref('ru')
+const formState = ref('create')
 
 function isCustomError(error: unknown): error is { status?: number } {
   return typeof error === 'object' && error !== null && 'status' in error
 }
 
-const validatePhoneNumber = async (rule: any, value: any, callback: any) => {
+const validatePhoneNumber = async (rule: any, value: string, callback: any) => {
   if (!value) {
     callback(new Error('Введите номер телефона'))
   }
 
   try {
     await axios.get(
-      `https://api.kod.mobi/api/v1/message/create?phone=${computedPhoneNumber.value}`,
+      `https://api.kod.mobi/api/v1/message/create?phone=${computedPhoneNumber.value}&type=sms`,
       { headers: { 'x-api-key': import.meta.env.VITE_API_KEY } },
     )
     callback()
@@ -60,6 +51,7 @@ const computedPhoneNumber = computed(
 )
 
 const submitForm = async (formEl: FormInstance | undefined) => {
+  formState.value = 'check'
   if (!formEl) return
   formEl.validate(valid => {
     if (!valid) {
@@ -72,88 +64,79 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 <template>
   <main class="window">
     <div class="form-container">
-      <div class="form-container__header">
-        <div class="form-container__header__logo"></div>
-        <h2 class="form-container__header__caption">Введите номер телефона</h2>
-        <p class="form-container__header__description text-grey">
-          Чтобы войти или зарегистрироваться
-        </p>
-      </div>
-      <el-form
-        ref="ruleFormRef"
-        :model="ruleForm"
-        :rules="rules"
-        class="form-container__form"
-      >
-        <el-form-item
-          class="mb-40px"
-          label-position="top"
-          label="Страна"
-          prop="country"
-        >
-          <el-select
-            filterable
-            placeholder="Выберите страну"
-            v-model="ruleForm.country"
-            value-key="name"
-            size="large"
-            no-match-text="Ничего не найдено"
+      <Transition name="slide-x">
+        <div v-if="formState === 'create'" class="form-transition-wrapper">
+          <div class="form-container__header">
+            <div class="form-container__header__logo"></div>
+            <h2 class="form-container__header__caption">
+              Введите номер телефона
+            </h2>
+            <p class="form-container__header__description text-grey">
+              Чтобы войти или зарегистрироваться
+            </p>
+          </div>
+          <el-form
+            ref="ruleFormRef"
+            :model="ruleForm"
+            :rules="rules"
+            class="form-container__form"
           >
-            <el-option
-              v-for="country in rawCountries"
-              :key="country.code"
-              :label="country.name"
-              :value="country"
+            <el-form-item
+              class="mb-40px"
+              label-position="top"
+              label="Страна"
+              prop="country"
             >
-              <span style="float: left"
-                >{{ country.name }} ({{ country.code }})</span
+              <el-select
+                filterable
+                placeholder="Выберите страну"
+                v-model="ruleForm.country"
+                value-key="name"
+                size="large"
+                no-match-text="Ничего не найдено"
               >
-              <span style="float: right">{{ country.dial_code }}</span>
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item class="mb-40px" prop="phoneNumber">
-          <el-input
-            placeholder="Номер телефона"
-            type="text"
-            v-model="ruleForm.phoneNumber"
-            size="large"
-          >
-            <template #prepend>{{ ruleForm.country.dial_code }}</template>
-          </el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            class="w-100 text-black"
-            size="large"
-            type="primary"
-            @click="submitForm(ruleFormRef)"
-          >
-            Submit
-          </el-button>
-        </el-form-item>
-        <!-- 
-        <p>{{ ruleForm.country }}</p>
-        <p>{{ computedPhoneNumber }}</p> -->
-      </el-form>
-      <div class="form-container__footer text-grey">
-        <el-select
-          v-model="currentLanguage"
-          value-key="value"
-          style="width: 120px"
-        >
-          <el-option
-            v-for="language in languages"
-            :key="language.value"
-            :value="language.value"
-            :label="language.label"
-          ></el-option>
-        </el-select>
-        <div>
-          <span class="mr-24px cursor-pointer">Условия</span>
-          <span class="cursor-pointer">Конфиденциальность</span>
+                <el-option
+                  v-for="country in rawCountries"
+                  :key="country.code"
+                  :label="country.name"
+                  :value="country"
+                >
+                  <span style="float: left"
+                    >{{ country.name }} ({{ country.code }})</span
+                  >
+                  <span style="float: right">{{ country.dial_code }}</span>
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item class="mb-40px" prop="phoneNumber">
+              <el-input
+                placeholder="Номер телефона"
+                type="text"
+                v-model="ruleForm.phoneNumber"
+                size="large"
+              >
+                <template #prepend>{{ ruleForm.country.dial_code }}</template>
+              </el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button
+                class="w-100 text-black"
+                size="large"
+                type="primary"
+                @click="submitForm(ruleFormRef)"
+              >
+                Продолжить
+              </el-button>
+            </el-form-item>
+          </el-form>
+          <form-footer />
         </div>
-      </div>
+        <check-code-form
+          @change-state="formState = 'create'"
+          v-else-if="formState === 'check'"
+          :phone-number="computedPhoneNumber"
+        />
+      </Transition>
     </div>
   </main>
 </template>
@@ -177,6 +160,8 @@ const submitForm = async (formEl: FormInstance | undefined) => {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .form-container__header {
@@ -198,38 +183,31 @@ const submitForm = async (formEl: FormInstance | undefined) => {
   margin-bottom: 30px;
 }
 
-.form-item-heigth {
-  height: 54px;
-}
-
-.mb-40px {
-  margin-bottom: 40px;
-}
-
-.mr-24px {
-  margin-right: 24px;
-}
-
-.w-100 {
-  width: 100%;
-}
-
-.form-container__footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.text-grey {
-  color: rgba(102, 102, 102, 1);
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
 .form-container__form {
   width: 100%;
+}
+
+.slide-x-enter-active,
+.slide-x-leave-active {
+  transition: all 0.5s ease-out;
+}
+
+.slide-x-enter-from {
+  opacity: 0;
+  transform: translateX(500px);
+}
+
+.slide-x-leave-to {
+  opacity: 0;
+  transform: translateX(-500px);
+}
+
+.form-transition-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>
