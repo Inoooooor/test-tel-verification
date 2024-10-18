@@ -197,27 +197,6 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 }
 </script>
 <style scoped>
-.window {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.form-container {
-  width: 500px;
-  height: 594px;
-  padding: 24px;
-  border: 1px rgba(223, 223, 223, 1) solid;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-}
-
 .form-container__header {
   display: flex;
   flex-direction: column;

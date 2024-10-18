@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import type { FormInstance, FormRules } from 'element-plus'
-import axios from 'axios'
-import { ref, computed, reactive } from 'vue'
+import { ref } from 'vue'
 import CheckCodeForm from './components/CheckCodeForm.vue'
 import CreateCodeForm from './components/CreateCodeForm.vue'
 
@@ -46,52 +44,5 @@ const formState = ref('create')
   align-items: center;
   position: relative;
   overflow: hidden;
-}
-
-.form-container__header {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.form-container__header__caption {
-  font-size: 32px;
-  margin: 0 0 14px 0;
-}
-
-.form-container__header__logo {
-  width: 300px;
-  height: 40px;
-  background-color: rgba(248, 248, 248, 1);
-  margin-bottom: 30px;
-}
-
-.form-container__form {
-  width: 100%;
-}
-
-.slide-x-enter-active,
-.slide-x-leave-active {
-  transition: all 0.5s ease-out;
-}
-
-.slide-x-enter-from {
-  opacity: 0;
-  transform: translateX(500px);
-}
-
-.slide-x-leave-to {
-  opacity: 0;
-  transform: translateX(-500px);
-}
-
-.form-transition-wrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
 }
 </style>

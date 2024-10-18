@@ -2,9 +2,11 @@
   <div v-if="formState === 'create'" class="form-transition-wrapper">
     <div class="form-container__header">
       <div class="form-container__header__logo"></div>
-      <h2 class="form-container__header__caption">Введите номер телефона</h2>
+      <h2 class="form-container__header__caption">
+        {{ $t('createCodeForm.title') }}
+      </h2>
       <p class="form-container__header__description text-grey">
-        Чтобы войти или зарегистрироваться
+        {{ $t('createCodeForm.description') }}
       </p>
     </div>
     <el-form
@@ -16,16 +18,16 @@
       <el-form-item
         class="mb-40px"
         label-position="top"
-        label="Страна"
+        :label="$t('createCodeForm.country.label')"
         prop="country"
       >
         <el-select
           filterable
-          placeholder="Выберите страну"
+          :placeholder="$t('createCodeForm.country.placeholder')"
           v-model="ruleForm.country"
           value-key="name"
           size="large"
-          no-match-text="Ничего не найдено"
+          :no-match-text="$t('createCodeForm.country.noMatchText')"
         >
           <el-option
             v-for="country in rawCountries"
@@ -42,7 +44,7 @@
       </el-form-item>
       <el-form-item class="mb-40px" prop="phoneNumber">
         <el-input
-          placeholder="Номер телефона"
+          :placeholder="$t('createCodeForm.phone.placeholder')"
           type="text"
           v-model="ruleForm.phoneNumber"
           size="large"
@@ -57,7 +59,7 @@
           type="primary"
           @click="submitForm(ruleFormRef)"
         >
-          Продолжить
+          {{ $t('createCodeForm.submit.label') }}
         </el-button>
       </el-form-item>
     </el-form>
@@ -71,6 +73,9 @@ import { ref, computed, reactive } from 'vue'
 import rawCountries from '../content/intelNumbers'
 import FormFooter from './FormFooter.vue'
 import isCustomError from '@/helpers/isCustomError'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const emit = defineEmits(['changeToCheck'])
 
@@ -90,7 +95,7 @@ const formState = ref('create')
 
 const validatePhoneNumber = async (rule: any, value: string, callback: any) => {
   if (!value) {
-    callback(new Error('Введите номер телефона'))
+    callback(new Error(t('createCodeForm.phone.emptyInputError')))
   }
 
   try {
@@ -103,7 +108,7 @@ const validatePhoneNumber = async (rule: any, value: string, callback: any) => {
     callback()
   } catch (error: unknown) {
     if (isCustomError(error) && error.status === 400) {
-      callback(new Error('Введите корректный номер телефона'))
+      callback(new Error(t('createCodeForm.phone.wrongPhoneNumber')))
     }
   }
 }
@@ -127,28 +132,6 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 }
 </script>
 <style scoped>
-.window {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.form-container {
-  width: 500px;
-  height: 594px;
-  padding: 24px;
-  border: 1px rgba(223, 223, 223, 1) solid;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
 .form-container__header {
   display: flex;
   flex-direction: column;
