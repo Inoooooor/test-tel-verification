@@ -7,16 +7,12 @@
       size="small"
       @change="changeLocale"
     >
-      <el-option
-        v-for="language in languages"
-        :key="language.value"
-        :value="language.value"
-        :label="language.label"
-      ></el-option>
+      <el-option value="ru" :label="$t('formFooter.langs.ru')"></el-option>
+      <el-option value="en" :label="$t('formFooter.langs.en')"></el-option>
     </el-select>
     <div>
-      <span class="mr-24px cursor-pointer">Условия</span>
-      <span class="cursor-pointer">Конфиденциальность</span>
+      <span class="mr-24px cursor-pointer">{{ t('formFooter.terms') }}</span>
+      <span class="cursor-pointer">{{ t('formFooter.privacy') }}</span>
     </div>
   </div>
 </template>
@@ -31,11 +27,6 @@ const currentLanguage = ref('ru')
 const changeLocale = () => {
   locale.value = currentLanguage.value
 }
-
-const languages = [
-  { value: 'ru', label: 'Русский' },
-  { value: 'en', label: 'Английский' },
-]
 </script>
 <style scoped>
 .form-container__footer {

@@ -12,9 +12,11 @@
   >
     <div class="form-container__header">
       <div class="form-container__header__logo"></div>
-      <h2 class="form-container__header__caption">Введите код</h2>
+      <h2 class="form-container__header__caption">
+        {{ $t('verifyCodeForm.title') }}
+      </h2>
       <p class="form-container__header__description text-grey">
-        Отправлен по номеру {{ phoneNumber }}
+        {{ $t('verifyCodeForm.description') }} {{ phoneNumber }}
       </p>
     </div>
     <el-form
@@ -26,14 +28,10 @@
       <el-form-item
         class="mb-40px"
         label-position="top"
-        label="Способ получения кода"
+        :label="$t('verifyCodeForm.codeChannel.label')"
         prop="currentMessanger"
       >
-        <el-select
-          placeholder="Выберите мессенджер"
-          v-model="ruleForm.currentMessanger"
-          size="large"
-        >
+        <el-select v-model="ruleForm.currentMessanger" size="large">
           <el-option
             v-for="messanger in messangers"
             :key="messanger.label"
@@ -51,14 +49,16 @@
       </el-form-item>
       <el-form-item class="mb-40px" prop="checkCode">
         <el-input
-          placeholder="Введите код"
+          :placeholder="$t('verifyCodeForm.code.label')"
           type="text"
           v-model="ruleForm.checkCode"
           size="large"
         >
           <template #append>
             <span v-if="isSend">0:{{ padStartTimer }}</span>
-            <el-button v-else @click="resendCode">Отправить</el-button>
+            <el-button v-else @click="resendCode">{{
+              $t('verifyCodeForm.code.resendButton')
+            }}</el-button>
           </template>
         </el-input>
       </el-form-item>
@@ -71,7 +71,7 @@
             type=""
             :icon="ArrowLeft"
           >
-            Назад
+            {{ $t('verifyCodeForm.navigate.back') }}
           </el-button>
           <el-button
             @click="submitForm(ruleFormRef)"
@@ -79,7 +79,7 @@
             size="large"
             type="primary"
           >
-            Продолжить
+            {{ $t('verifyCodeForm.submit.label') }}
           </el-button>
         </el-button-group>
       </el-form-item>
@@ -94,6 +94,9 @@ import { ref, computed, reactive } from 'vue'
 import FormFooter from './FormFooter.vue'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import isCustomError from '@/helpers/isCustomError'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const ruleFormRef = ref<FormInstance>()
 
@@ -104,7 +107,7 @@ const ruleForm = reactive({
 
 const validateCheckCode = async (rule: any, value: string, callback: any) => {
   if (!value) {
-    callback(new Error('Введите код'))
+    callback(new Error(t('verifyCodeForm.code.emptyInputError')))
     return
   }
 
@@ -117,17 +120,18 @@ const validateCheckCode = async (rule: any, value: string, callback: any) => {
     console.log(data.data.verify_token)
     callback()
   } catch (error: unknown) {
-    if (isCustomError(error) && error.status === 400) {
-      callback(new Error('Код введён неверно'))
+    console.log('error', error)
+    if (
+      isCustomError(error) &&
+      error.response.data.sys_message === 'ERROR_MESSAGE_WRONG_CODE'
+    ) {
+      callback(new Error(t('verifyCodeForm.code.wrongCode')))
     }
     if (
       isCustomError(error) &&
-      error.sys_message === 'ERROR_MESSAGE_WRONG_CODE'
+      error.response.data.sys_message === 'ERROR_SESSION_EXPIRED'
     ) {
-      callback(new Error('Код введён неверно'))
-    }
-    if (isCustomError(error) && error.sys_message === 'ERROR_SESSION_EXPIRED') {
-      callback(new Error('Сессия устарела. Укажите номер телефона заново'))
+      callback(new Error(t('verifyCodeForm.code.expiredSessionError')))
     }
   }
 }
