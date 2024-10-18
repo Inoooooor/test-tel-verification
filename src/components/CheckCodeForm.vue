@@ -1,15 +1,5 @@
 <template>
-  <div
-    style="
-      position: absolute;
-      width: 90%;
-      height: 90%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-    "
-  >
+  <div class="check-form">
     <div class="form-container__header">
       <div class="form-container__header__logo"></div>
       <h2 class="form-container__header__caption">
@@ -119,8 +109,8 @@ const validateCheckCode = async (rule: any, value: string, callback: any) => {
     )
     console.log(data.data.verify_token)
     callback()
+    return
   } catch (error: unknown) {
-    console.log('error', error)
     if (
       isCustomError(error) &&
       error.response.data.sys_message === 'ERROR_MESSAGE_WRONG_CODE'
@@ -201,6 +191,16 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 }
 </script>
 <style scoped>
+.check-form {
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .form-container__header {
   display: flex;
   flex-direction: column;
